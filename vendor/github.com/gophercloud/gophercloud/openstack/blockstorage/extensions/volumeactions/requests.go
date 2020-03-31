@@ -241,6 +241,14 @@ type UploadImageOpts struct {
 
 	// Force image creation, usable if volume attached to instance.
 	Force bool `json:"force,omitempty"`
+
+	// Visibility defines who can see/use the image.
+	// supported since 3.1 microversion
+	Visibility string `json:"visibility,omitempty"`
+
+	// whether the image is not deletable.
+	// supported since 3.1 microversion
+	Protected bool `json:"protected,omitempty"`
 }
 
 // ToVolumeUploadImageMap assembles a request body based on the contents of a
@@ -294,6 +302,31 @@ func SetImageMetadata(client *gophercloud.ServiceClient, id string, opts ImageMe
 		return
 	}
 	_, r.Err = client.Post(actionURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	return
+}
+
+// BootableOpts contains options for setting bootable status to a volume.
+type BootableOpts struct {
+	// Enables or disables the bootable attribute. You can boot an instance from a bootable volume.
+	Bootable bool `json:"bootable"`
+}
+
+// ToBootableMap assembles a request body based on the contents of a
+// BootableOpts.
+func (opts BootableOpts) ToBootableMap() (map[string]interface{}, error) {
+	return gophercloud.BuildRequestBody(opts, "os-set_bootable")
+}
+
+// SetBootable will set bootable status on a volume based on the values in BootableOpts
+func SetBootable(client *gophercloud.ServiceClient, id string, opts BootableOpts) (r SetBootableResult) {
+	b, err := opts.ToBootableMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	_, r.Err = client.Post(actionURL(client, id), b, nil, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
 	return

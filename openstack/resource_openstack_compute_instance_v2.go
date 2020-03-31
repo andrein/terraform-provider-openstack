@@ -5,6 +5,8 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	flavors_util "github.com/gophercloud/utils/openstack/compute/v2/flavors"
+	images_util "github.com/gophercloud/utils/openstack/compute/v2/images"
 	"log"
 	"os"
 	"strings"
@@ -869,7 +871,7 @@ func resourceComputeInstanceV2Update(d *schema.ResourceData, meta interface{}) e
 			newFlavorId = d.Get("flavor_id").(string)
 		} else {
 			newFlavorName := d.Get("flavor_name").(string)
-			newFlavorId, err = flavors.IDFromName(computeClient, newFlavorName)
+			newFlavorId, err = flavors_util.IDFromName(computeClient, newFlavorName)
 			if err != nil {
 				return err
 			}
@@ -1265,7 +1267,7 @@ func getImageIDFromConfig(computeClient *gophercloud.ServiceClient, d *schema.Re
 	}
 
 	if imageName != "" {
-		imageId, err := images.IDFromName(computeClient, imageName)
+		imageId, err := images_util.IDFromName(computeClient, imageName)
 		if err != nil {
 			return "", err
 		}
@@ -1333,7 +1335,7 @@ func getFlavorID(computeClient *gophercloud.ServiceClient, d *schema.ResourceDat
 	}
 
 	if flavorName != "" {
-		flavorId, err := flavors.IDFromName(computeClient, flavorName)
+		flavorId, err := flavors_util.IDFromName(computeClient, flavorName)
 		if err != nil {
 			return "", err
 		}

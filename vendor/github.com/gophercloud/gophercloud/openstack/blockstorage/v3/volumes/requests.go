@@ -16,7 +16,7 @@ type CreateOptsBuilder interface {
 // see the Volume object.
 type CreateOpts struct {
 	// The size of the volume, in GB
-	Size int `json:"size" required:"true"`
+	Size int `json:"size,omitempty"`
 	// The availability zone
 	AvailabilityZone string `json:"availability_zone,omitempty"`
 	// ConsistencyGroupID is the ID of a consistency group
@@ -36,6 +36,9 @@ type CreateOpts struct {
 	// The ID of the image from which you want to create the volume.
 	// Required to create a bootable volume.
 	ImageID string `json:"imageRef,omitempty"`
+	// Specifies the backup ID, from which you want to create the volume.
+	// Create a volume from a backup is supported since 3.47 microversion
+	BackupID string `json:"backup_id,omitempty"`
 	// The associated volume type
 	VolumeType string `json:"volume_type,omitempty"`
 	// Multiattach denotes if the volume is multi-attach capable.
@@ -198,40 +201,4 @@ func Update(client *gophercloud.ServiceClient, id string, opts UpdateOptsBuilder
 		OkCodes: []int{200},
 	})
 	return
-}
-
-// IDFromName is a convienience function that returns a server's ID given its name.
-func IDFromName(client *gophercloud.ServiceClient, name string) (string, error) {
-	count := 0
-	id := ""
-
-	listOpts := ListOpts{
-		Name: name,
-	}
-
-	pages, err := List(client, listOpts).AllPages()
-	if err != nil {
-		return "", err
-	}
-
-	all, err := ExtractVolumes(pages)
-	if err != nil {
-		return "", err
-	}
-
-	for _, s := range all {
-		if s.Name == name {
-			count++
-			id = s.ID
-		}
-	}
-
-	switch count {
-	case 0:
-		return "", gophercloud.ErrResourceNotFound{Name: name, ResourceType: "volume"}
-	case 1:
-		return id, nil
-	default:
-		return "", gophercloud.ErrMultipleResourcesFound{Name: name, Count: count, ResourceType: "volume"}
-	}
 }
